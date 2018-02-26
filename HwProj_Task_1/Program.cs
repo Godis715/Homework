@@ -26,7 +26,7 @@ namespace MyProgram
 
 		static void Main(string[] args) {
 			try {
-				Console.Write("Enter the number\n");
+				Console.Write("Enter the number of Fibonacci numbers \n");
 				int num = Int32.Parse(Console.ReadLine());
 				Console.Write(num.ToString() + "! = " + Fac(num).ToString() + "\n");
 			}
