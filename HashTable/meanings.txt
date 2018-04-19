@@ -1,0 +1,23 @@
+integer type, short of "integer"
+logic type, short of "boolean"
+character type, short of "character"
+structure is a group of data elements grouped together under one name
+Terminates the execution of a function and returns control to the calling function
+class in C++ is a user defined type or data structure declared with keyword class that has data and functions
+after default follows code, which will execute if value doesn't match any cases
+Includes other source file into current source file at the line immediately after the directive
+The define creates a macro, which is the association of an identifier or parameterized identifier with a token string
+Controls conditional branching
+Controls conditional branching
+Executes a statement repeatedly until the condition becomes false
+Executes statement repeatedly until expression evaluates to zero
+Executes a statement repeatedly until the specified termination condition (the expression) evaluates to zero
+Public keyword specifies that class' members are accessible from any function
+Private keyword specifies that class' members are accessible only from member functions and friends 
+Protected keyword specifies access to class members in the member-list up to the next access specifier 
+Transfers control to one of the several statements, depending on the value of a condition.
+Allocates memory for an object or array of objects of type-name from the free store and returns a suitably typed, nonzero pointer to the object.
+Deallocates a block of memory
+programming language
+the best error ever
+Famous programming language

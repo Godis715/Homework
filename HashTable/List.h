@@ -27,7 +27,11 @@ public:
 		void DeleteCurrent();
 		void AddNext(T);
 	};
-	DoubleList() {}
+	DoubleList() {
+		tail = nullptr;
+		head = nullptr;
+		size = 0;
+	}
 	Cursor Begin() {
 		Cursor cur(*this);
 		cur.MoveHead();
