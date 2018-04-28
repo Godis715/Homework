@@ -31,8 +31,9 @@ int main() {
 	dict.Add(6, 'f');
 	dict.Add(7, 'g');
 
+
 	auto u = dict.GetMarker();
-	for (int i = 0; i < 5; ++i) {
+	for (int i = 0; i < 3; ++i) {
 		u->MoveNext();
 	}
 	u->DeleteCurrent();
@@ -42,6 +43,9 @@ int main() {
 		std::cout << u->GetValue() << " ";
 		u->MoveNext();
 	}
+
+	delete u;
+	
 
 	_getch();
 	return 0;

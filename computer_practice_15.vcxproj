@@ -114,11 +114,8 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="deque.h" />
     <ClInclude Include="Dictionary.h" />
     <ClInclude Include="INumerable.h" />
-    <ClInclude Include="queue.h" />
-    <ClInclude Include="stack.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

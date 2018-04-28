@@ -63,8 +63,7 @@ private:
 		bool inRight;
 		if ((node->right != nullptr) && (node->left != nullptr)) {
 
-			inRight = (node->right->high > node->left->high);
-
+			inRight = (node->right->high >= node->left->high);
 		}
 		else {
 
@@ -139,6 +138,7 @@ private:
 			return;
 		}
 		else {
+			temp = node->left;
 			while (temp->right != nullptr)
 			{
 				temp = temp->right;
@@ -155,7 +155,7 @@ private:
 				// проверка, если у большего сына удаляемого елемента нет меньших сыновей	
 				temp->parent = node->parent;
 				if (node->parent != nullptr) {
-					if (node->value <= node->parent->value) {
+					if (node->value > node->parent->value) {
 						node->parent->right = temp;
 					}
 					else {
@@ -173,7 +173,7 @@ private:
 				return;
 			}
 			//
-			temp->parent->right = temp->right;
+			temp->parent->right = temp->left;
 			if (temp->left != nullptr) {
 				temp->left->parent = temp->parent;
 			}
@@ -181,7 +181,7 @@ private:
 			//
 			temp->parent = node->parent;
 			if (node->parent != nullptr) {
-				if (node->value <= node->parent->value) {
+				if (node->value > node->parent->value) {
 					node->parent->right = temp;
 				}
 				else {
