@@ -132,12 +132,8 @@ namespace CGpractice
 			}
 		}
 
-		public void DrawLineBrez(double x1, double y1, double x2, double y2)
+		public void DrawLineBrez(double x1, double y1, double x2, double y2, double r = 100, double g = 200, double b = 20)
 		{
-			double r = 100;
-			double g = 200;
-			double b = 20;
-
 			double dy = y2 - y1;
 			double dx = x2 - x1;
 			double d = 2 * dy - dx;
@@ -148,6 +144,24 @@ namespace CGpractice
 				SetPixel((int)x, (int)y, new byte[] { (byte)r, (byte)g, (byte)b });
 				if (d < 0) d += 2 * dy;
 				else { d += 2 * (dy - dx); ++y; }
+				++x;
+			} while (x <= x2);
+		}
+
+		public void DrawLineBrezMod(double x1, double y1, double x2, double y2, double r = 100, double g = 200, double b = 20)
+		{
+			double I = 1;
+
+			double x = x1;
+			double y = y1;
+			double k = I * (y2 - y1) / (x2 - x1);
+			double d = I / 2;
+			double dmax = I - k;
+			do
+			{
+				SetPixel((int)x, (int)y, new byte[] { (byte)(r * d), (byte)(g * d), (byte)(b * d) });
+				if (d >= dmax) { ++y; d -= dmax; }
+				else d += k;
 				++x;
 			} while (x <= x2);
 		}
@@ -366,9 +380,9 @@ namespace CGpractice
 			canvas = _canvas;
 			for (int i = 1; i < points.Length; i++)
 			{
-				canvas.DrawLineDDA(points[i - 1].x, points[i - 1].y, points[i].x, points[i].y);
+				canvas.DrawLineBrez(points[i - 1].x, points[i - 1].y, points[i].x, points[i].y);
 			}
-			canvas.DrawLineDDA(points[points.Length - 1].x, points[points.Length - 1].y, points[0].x, points[0].y);
+			canvas.DrawLineBrez(points[points.Length - 1].x, points[points.Length - 1].y, points[0].x, points[0].y);
 			CountArea();
 		}
 
