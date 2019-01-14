@@ -12,8 +12,8 @@ namespace CGpractice
         private Bitmap image;
         private BitmapData bd;
 
-        private int width;
-        private int height;
+        public readonly int width;
+		public readonly int height;
         private int bpp;
 
         public MyCanvas(int w, int h)
@@ -27,7 +27,17 @@ namespace CGpractice
             bpp = Bitmap.GetPixelFormatSize(bd.PixelFormat) / 8;
         }
 
-        public byte[] GetPixel(int x, int y, int bytes)
+		public MyCanvas(string fileName)
+		{
+			image = new Bitmap(fileName);
+			width = image.Width - 1;
+			height = image.Height - 1;
+			bd = image.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+
+			bpp = Bitmap.GetPixelFormatSize(bd.PixelFormat) / 8;
+		}
+
+		public byte[] GetPixel(int x, int y, int bytes)
         {
             byte[] color = new byte[bytes];
 
@@ -60,6 +70,29 @@ namespace CGpractice
             image.UnlockBits(bd);
 
             image.Save(fileName, ImageFormat.Bmp);
+		}
+
+		public void DiffusePseudomonotone()
+		{
+			int d = 0;
+			for (int y = 0; y <= height; y++)
+			{
+				d = 0;
+				for (int x = 0; x <= width; x++)
+				{
+					var color = GetPixel(x, y, 1)[0];
+					if (color + d < 128)
+					{
+						SetPixel(x, y, new byte[] { 0, 0, 0});
+						d = (color + d) - 0;
+					}
+					else
+					{
+						SetPixel(x, y, new byte[] { 255, 255, 255 });
+						d = (color + d) - 255;
+					}
+				}
+			}
 		}
 
 		public void DrawLineParam(double x1, double y1, double x2, double y2)
@@ -245,9 +278,9 @@ namespace CGpractice
 			{
 				SetPixel(tx, ty, color);
 				if (tx - 1 >= 0) FillPixel(tx - 1, ty, color, baseColor);
-				if (tx + 1 <= 255) FillPixel(tx + 1, ty, color, baseColor);
+				if (tx + 1 <= width) FillPixel(tx + 1, ty, color, baseColor);
 				if (ty - 1 >= 0) FillPixel(tx, ty - 1, color, baseColor);
-				if (ty + 1 <= 255) FillPixel(tx, ty + 1, color, baseColor);
+				if (ty + 1 <= height) FillPixel(tx, ty + 1, color, baseColor);
 			}
 		}
 		public void FillOnClickRec(int x0, int y0, double r, double g, double b)
@@ -272,9 +305,9 @@ namespace CGpractice
 				{
 					SetPixel(tx, ty, color);
 					if (tx - 1 >= 0) stack.Push(new int[] { tx - 1, ty });
-					if (tx + 1 <= 255) stack.Push(new int[] { tx + 1, ty });
+					if (tx + 1 <= width) stack.Push(new int[] { tx + 1, ty });
 					if (ty - 1 >= 0) stack.Push(new int[] { tx, ty - 1 });
-					if (ty + 1 <= 255) stack.Push(new int[] { tx, ty + 1 });
+					if (ty + 1 <= height) stack.Push(new int[] { tx, ty + 1 });
 				}
 			} while (stack.Count != 0);
 
@@ -359,7 +392,7 @@ namespace CGpractice
 		private Vector2 pArea2;
 		private void CountArea()
 		{
-			pArea1 = new Vector2(256, 256);
+			pArea1 = new Vector2(canvas.width + 1, canvas.height + 1);
 			pArea2 = new Vector2(0, 0);
 			for (int i = 0; i < points.Length; i++)
 			{
@@ -527,7 +560,7 @@ namespace CGpractice
 					{
 						int tx = (int)(cx + (i - cx) * a);
 						int ty = (int)(cy + (j - cy) * a);
-						if (tx >= 0 && tx <= 255 && ty >= 0 && ty <= 255)
+						if (tx >= 0 && tx <= canvas.width && ty >= 0 && ty <= canvas.height)
 						{
 							var color = canvas.GetPixel(i, j, 3);
 							canvas.SetPixel(tx, ty, color);
@@ -542,9 +575,9 @@ namespace CGpractice
 		{
 			double errorx = 0.0;
 			double errory = 0.0;
-			for (int i = 0; i < 256; ++i)
+			for (int i = 0; i <= canvas.width; ++i)
 			{
-				for (int j = 0; j < 256; ++j)
+				for (int j = 0; j <= canvas.height; ++j)
 				{
 					int tx = (int)((i + cx * (a - 1)) / a);
 					int ty = (int)((j + cy * (a - 1)) / a);
@@ -576,7 +609,7 @@ namespace CGpractice
 					{
 						int tx = i + dx;
 						int ty = j + dy;
-						if (tx >= 0 && tx <= 255 && ty >= 0 && ty <= 255)
+						if (tx >= 0 && tx <= canvas.width && ty >= 0 && ty <= canvas.height)
 						{
 							var color = canvas.GetPixel(i, j, 3);
 							canvas.SetPixel(tx, ty, color);
@@ -597,7 +630,7 @@ namespace CGpractice
 					{
 						int tx = (int)((i - cx) * Math.Cos(angle) - (j - cy) * Math.Sin(angle)) + cx;
 						int ty = (int)((i - cx) * Math.Sin(angle) + (j - cy) * Math.Cos(angle)) + cy;
-						if (tx >= 0 && tx <= 255 && ty >= 0 && ty <= 255)
+						if (tx >= 0 && tx <= canvas.width && ty >= 0 && ty <= canvas.height)
 						{
 							var color = canvas.GetPixel(i, j, 3);
 							canvas.SetPixel(tx, ty, color);
@@ -647,7 +680,7 @@ namespace CGpractice
 				{
 					int tx = (int)(cx + (i - cx) * a);
 					int ty = (int)(cy + (j - cy) * a);
-					if (tx >= 0 && tx <= 255 && ty >= 0 && ty <= 255)
+					if (tx >= 0 && tx <= canvas.width && ty >= 0 && ty <= canvas.height)
 					{
 						var color = canvas.GetPixel(i, j, 3);
 						canvas.SetPixel(tx, ty, color);
@@ -660,9 +693,9 @@ namespace CGpractice
 		{
 			double errorx = 0.0;
 			double errory = 0.0;
-			for (int i = 0; i < 256; ++i)
+			for (int i = 0; i <= canvas.width; ++i)
 			{
-				for (int j = 0; j < 256; ++j)
+				for (int j = 0; j <= canvas.height; ++j)
 				{
 					int tx = (int)((i + cx * (a - 1)) / a);
 					int ty = (int)((j + cy * (a - 1)) / a);
@@ -694,7 +727,7 @@ namespace CGpractice
 				{
 					int tx = i + dx;
 					int ty = j + dy;
-					if (tx >= 0 && tx <= 255 && ty >= 0 && ty <= 255)
+					if (tx >= 0 && tx <= canvas.width && ty >= 0 && ty <= canvas.height)
 					{
 						var color = canvas.GetPixel(i, j, 3);
 						canvas.SetPixel(tx, ty, color);
@@ -712,7 +745,7 @@ namespace CGpractice
 				{
 					int tx = (int)((i - cx) * Math.Cos(angle) - (j - cy) * Math.Sin(angle)) + cx;
 					int ty = (int)((i - cx) * Math.Sin(angle) + (j - cy) * Math.Cos(angle)) + cy;
-					if (tx >= 0 && tx <= 255 && ty >= 0 && ty <= 255)
+					if (tx >= 0 && tx <= canvas.width && ty >= 0 && ty <= canvas.height)
 					{
 						var color = canvas.GetPixel(i, j, 3);
 						canvas.SetPixel(tx, ty, color);
@@ -724,9 +757,9 @@ namespace CGpractice
 		public void NewRatate(int cx, int cy, double _angle)
 		{
 			double angle = (_angle * Math.PI) / 180;
-			for (int i = 0; i < 256; ++i)
+			for (int i = 0; i <= canvas.width; ++i)
 			{	
-				for (int j = 0; j < 256; ++j)
+				for (int j = 0; j <= canvas.height; ++j)
 				{
 					int tx = (int)((i - (cx - (cx) * Math.Cos(angle) + (cy) * Math.Sin(angle))) * Math.Cos(angle)
 						+ (j - (cy - (cx) * Math.Sin(angle) - (cy) * Math.Cos(angle))) * Math.Sin(angle));

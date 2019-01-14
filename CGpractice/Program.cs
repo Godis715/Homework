@@ -8,7 +8,11 @@ namespace CGpractice
         static void Main(string[] args)
         {
             // size of canvas is 255 x 255
-            MyCanvas canvas = new MyCanvas(255, 255);
+           // MyCanvas canvas = new MyCanvas(255, 255);
+			MyCanvas canvas = new MyCanvas("test.bmp");
+			canvas.DiffusePseudomonotone();
+
+
 			//for (int i = 0; i < 256; ++i)
 			//{
 			//	for (int j = 0; j < 256; ++j)
