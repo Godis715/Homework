@@ -52,12 +52,37 @@ namespace CGpractice
                 }
             }
 
-            return color;
+			if (color.Length == 3)
+			{
+				var b = color[0];
+				var g = color[1];
+				var r = color[2];
+				color[0] = r;
+				color[1] = g;
+				color[2] = b;
+			}
+
+			return color;
         }
 
-        public void SetPixel(int x, int y, byte[] color)
+        public void SetPixel(int x, int y, byte[] _color)
         {
-            unsafe
+			var color = new Byte[3];
+			if (color.Length == 3)
+			{
+				var r = _color[0];
+				var g = _color[1];
+				var b = _color[2];
+				color[0] = b;
+				color[1] = g;
+				color[2] = r;
+			}
+			else
+			{
+				color = _color;
+			}
+
+			unsafe
             {
                 var firstByte = (byte*)bd.Scan0 + (y * bd.Stride + x * bpp);
                 for (int i = 0; i < color.Length; ++i)
@@ -72,6 +97,79 @@ namespace CGpractice
             image.UnlockBits(bd);
 
             image.Save(fileName, ImageFormat.Bmp);
+		}
+
+		public void Copy(MyCanvas sourceCanvas)
+		{
+			int w = Math.Min(this.width, sourceCanvas.width);
+			int h = Math.Min(this.height, sourceCanvas.height);
+			for (int x = 0; x <= w; x++)
+			{
+				for (int y = 0; y < h; y++)
+				{
+					var color = sourceCanvas.GetPixel(x, y, 3);
+					this.SetPixel(x, y, color);
+				}
+			}
+		}
+
+		public void PrintHistogram()
+		{
+			var histogramR = new int[256];
+			var histogramG = new int[256];
+			var histogramB = new int[256];
+			for (int x = 0; x < width; x++)
+			{
+				for (int y = 0; y < height; y++)
+				{
+					var color = GetPixel(x, y, 3);
+					histogramR[color[0]]++;
+					histogramG[color[1]]++;
+					histogramB[color[2]]++;
+				}
+			}
+			for (int i = 0; i < 256; i++)
+			{
+				histogramR[i] = (int)(histogramR[i] * (255 / (double)(width * height))) * 20;
+				histogramG[i] = (int)(histogramG[i] * (255 / (double)(width * height))) * 20;
+				histogramB[i] = (int)(histogramB[i] * (255 / (double)(width * height))) * 20;
+			}
+			var ImageHistogramR = new MyCanvas(256, 256);
+			var ImageHistogramG = new MyCanvas(256, 256);
+			var ImageHistogramB = new MyCanvas(256, 256);
+			var ImageHistogram = new MyCanvas(256, 256);
+			for (int i = 0; i < 256; i++)
+			{
+				for (int j = 0; j < histogramR[i]; j++)
+				{
+					ImageHistogramR.SetPixel(i, j, new byte[] { 255, 0, 0 });
+				}
+			}
+			for (int i = 0; i < 256; i++)
+			{
+				for (int j = 0; j < histogramG[i]; j++)
+				{
+					ImageHistogramG.SetPixel(i, j, new byte[] { 0, 255, 0 });
+				}
+			}
+			for (int i = 0; i < 256; i++)
+			{
+				for (int j = 0; j < histogramB[i]; j++)
+				{
+					ImageHistogramB.SetPixel(i, j, new byte[] { 0, 0, 255 });
+				}
+			}
+			for (int i = 0; i < 256; i++)
+			{
+				for (int j = 0; j < 0.299 * histogramR[i] + 0.587 * histogramG[i] + 0.114 * histogramB[i]; j++)
+				{
+					ImageHistogram.SetPixel(i, j, new byte[] { 255, 255, 255 });
+				}
+			}
+			ImageHistogramR.Save("histogramR.bmp");
+			ImageHistogramG.Save("histogramG.bmp");
+			ImageHistogramB.Save("histogramB.bmp");
+			ImageHistogram.Save("histogram.bmp");
 		}
 
 		public void Clear()
@@ -108,6 +206,7 @@ namespace CGpractice
 			}
 		}
 
+		#region Рисование линии
 		public void DrawLineParam(double x1, double y1, double x2, double y2)
 		{
 			int N = Math.Max(Math.Abs((int)(x2 - x1)), Math.Abs((int)(y2 - y1))) + 1;
@@ -235,7 +334,8 @@ namespace CGpractice
 				++x;
 			} while (x <= x2);
 		}
-
+		#endregion
+		#region Рисование окружности
 		private void PutCircPixels(int x0, int y0, int x1, int y1, int x2, int y2)
 		{
 			DrawLineDDA(x1, y1, x2, y2); //1 сектор
@@ -307,7 +407,8 @@ namespace CGpractice
 				++x;
 			} while (x < x0 + rad / Math.Sqrt(2));
 		}
-
+		#endregion
+		#region Затравка
 		private void FillPixel(int tx, int ty, byte[] color, byte[] baseColor)
 		{
 			var tempColor = GetPixel(tx, ty, 3);
@@ -349,7 +450,8 @@ namespace CGpractice
 			} while (stack.Count != 0);
 
 		}
-
+		#endregion
+		#region Обрезание области
 		//0x0001 // 1
 		//0x0010 // 16
 		//0x0100 // 256
@@ -681,6 +783,8 @@ namespace CGpractice
 				DrawLineDDA(arraySegment[i].point1.x, arraySegment[i].point1.y, arraySegment[i].point2.x, arraySegment[i].point2.y, 200, 200, 20, false);
 			}
 		}
+		//__________________________________
+		#endregion
 	}
 
 	class Vector2
@@ -970,6 +1074,8 @@ namespace CGpractice
 
 		public void Transform(int dx, int dy)
 		{
+			var tempCanvas = new MyCanvas(canvas.width, canvas.height);
+			tempCanvas.Copy(canvas);
 			for (int i = y - rad; i < y + rad; ++i)
 			{
 				for (int j = x - rad; j < x + rad; ++j)
@@ -978,12 +1084,30 @@ namespace CGpractice
 					{
 						int tx = i + dx;
 						int ty = j + dy;
-						if (tx >= 0 && tx <= canvas.width && ty >= 0 && ty <= canvas.height)
+						if (tx >= 0 && tx <= tempCanvas.width && ty >= 0 && ty <= tempCanvas.height)
 						{
-							var color = canvas.GetPixel(i, j, 3);
-							canvas.SetPixel(tx, ty, color);
+							var colorFirst = canvas.GetPixel(i, j, 3);
+							var colorSecond = canvas.GetPixel(tx, ty, 3);
+							var colorResult = new Byte[3];
+							colorResult[0] = (byte)(colorFirst[0] ^ colorSecond[0]);
+							colorResult[1] = (byte)(colorFirst[1] ^ colorSecond[1]);
+							colorResult[2] = (byte)(colorFirst[2] ^ colorSecond[2]);
+							tempCanvas.SetPixel(tx, ty, colorResult);
 						}
 					}
+				}
+			}
+			for (int x = 0; x <= canvas.width; x++)
+			{
+				for (int y = 0; y < canvas.width; y++)
+				{
+					var colorFirst = canvas.GetPixel(x, y, 3);
+					var colorSecond = tempCanvas.GetPixel(x, y, 3);
+					var colorResult = new Byte[3];
+					colorResult[0] = (byte)(colorFirst[0] ^ colorSecond[0]);
+					colorResult[1] = (byte)(colorFirst[1] ^ colorSecond[1]);
+					colorResult[2] = (byte)(colorFirst[2] ^ colorSecond[2]);
+					canvas.SetPixel(x, y, colorResult);
 				}
 			}
 		}

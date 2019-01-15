@@ -8,10 +8,10 @@ namespace CGpractice
         static void Main(string[] args)
         {
             // size of canvas is 255 x 255
-            MyCanvas canvas = new MyCanvas(255, 255);
-			//MyCanvas canvas = new MyCanvas("test.bmp");
+            //MyCanvas canvas = new MyCanvas(255, 255);
+			MyCanvas canvas = new MyCanvas("test2.jpg");
 			//canvas.DiffusePseudomonotone();
-
+			//canvas.FillOnClickIt(0, 0, 0, 0, 255);
 			/* Отсечение видимой частью
 			canvas.DrawLineDDA(111, 179, 172, 138);
 			canvas.DrawLineDDA(17, 30, 160, 40);
@@ -41,19 +41,22 @@ namespace CGpractice
 			//}
 
 			//Геометрические преобразования
+			/*
 			int d = 100;
 			int c = 100;
 			var cir = new MyCircle(c, c, 25, canvas);
-			//cir.Scale(c, c, 2f);
-			//cir.NewScale(c, c, 2f);
-			cir.Transform(50, 50);
-			//cir.Rotate(c - 25, c - 25, 120);
-			//var rec = new MyRectangle(c, c, 50, 50, canvas);
-			//rec.Scale(c + 25, c + 25, 2);
-			//rec.NewScale(c + 25, c + 25, 3);
-			//rec.Transform(50, 50);
-			//rec.Rotate(0, 0, 30);
-			//rec.NewRatate(c, c, 120);
+			cir.Scale(c, c, 2f);
+			cir.NewScale(c, c, 2f);
+			cir.Transform(15, 15);
+			cir.Rotate(c - 25, c - 25, 120);
+			var rec = new MyRectangle(c, c, 50, 50, canvas);
+			rec.Scale(c + 25, c + 25, 2);
+			rec.NewScale(c + 25, c + 25, 3);
+			rec.Transform(50, 50);
+			rec.Rotate(0, 0, 30);
+			rec.NewRatate(c, c, 120);
+			*/
+			canvas.PrintHistogram();
 			
 
 			/*Отрезки
