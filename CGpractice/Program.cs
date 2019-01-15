@@ -8,10 +8,25 @@ namespace CGpractice
         static void Main(string[] args)
         {
             // size of canvas is 255 x 255
-           // MyCanvas canvas = new MyCanvas(255, 255);
-			MyCanvas canvas = new MyCanvas("test.bmp");
-			canvas.DiffusePseudomonotone();
+            MyCanvas canvas = new MyCanvas(255, 255);
+			//MyCanvas canvas = new MyCanvas("test.bmp");
+			//canvas.DiffusePseudomonotone();
 
+			/* Отсечение видимой частью
+			canvas.DrawLineDDA(111, 179, 172, 138);
+			canvas.DrawLineDDA(17, 30, 160, 40);
+			canvas.DrawLineDDA(50, 190, 230, 190);
+			canvas.DrawLineDDA(80, 150, 150, 80);
+			canvas.DrawLineDDA(190, 10, 230, 110);
+			canvas.DrawLineDDA(50, 10, 50, 110);
+			canvas.DrawLineDDA(50, 170, 170, 190);
+
+			canvas.CreateArea_CSalg(100, 100, 200, 200);
+			canvas.CreateArea__LBalg(100, 100, 200, 200);
+			var areaPoints = new Vector2[] { new Vector2(30, 70), new Vector2(150, 100),
+				new Vector2(160, 150), new Vector2(130, 190), new Vector2(70, 140)};
+			canvas.CreateArea__CBalg(areaPoints);
+			*/
 
 			//for (int i = 0; i < 256; ++i)
 			//{
@@ -25,21 +40,21 @@ namespace CGpractice
 			//	}
 			//}
 
-			/* Геометрические преобразования
+			//Геометрические преобразования
 			int d = 100;
 			int c = 100;
 			var cir = new MyCircle(c, c, 25, canvas);
-			cir.Scale(c, c, 2f);
-			cir.NewScale(c, c, 2f);
+			//cir.Scale(c, c, 2f);
+			//cir.NewScale(c, c, 2f);
 			cir.Transform(50, 50);
-			cir.Rotate(c - 25, c - 25, 120);
-			var rec = new MyRectangle(c, c, 50, 50, canvas);
-			rec.Scale(c + 25, c + 25, 2);
-			rec.NewScale(c + 25, c + 25, 3);
-			rec.Transform(50, 50);
-			rec.Rotate(0, 0, 30);
-			rec.NewRatate(c, c, 120);
-			*/
+			//cir.Rotate(c - 25, c - 25, 120);
+			//var rec = new MyRectangle(c, c, 50, 50, canvas);
+			//rec.Scale(c + 25, c + 25, 2);
+			//rec.NewScale(c + 25, c + 25, 3);
+			//rec.Transform(50, 50);
+			//rec.Rotate(0, 0, 30);
+			//rec.NewRatate(c, c, 120);
+			
 
 			/*Отрезки
 			double x1 = 11.33;

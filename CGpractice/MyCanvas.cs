@@ -6,26 +6,28 @@ using System.Runtime.InteropServices;
 
 namespace CGpractice
 {
-    class MyCanvas
-    {
+	class MyCanvas
+	{
 
-        private Bitmap image;
-        private BitmapData bd;
+		private Bitmap image;
+		private BitmapData bd;
 
-        public readonly int width;
+		public readonly int width;
 		public readonly int height;
-        private int bpp;
+		private int bpp;
 
-        public MyCanvas(int w, int h)
-        {
-            width = w;
-            height = h;
+		public MyCanvas(int w, int h)
+		{
+			width = w;
+			height = h;
 
-            image = new Bitmap(w, h);
-            bd = image.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+			image = new Bitmap(w, h);
+			bd = image.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
 
-            bpp = Bitmap.GetPixelFormatSize(bd.PixelFormat) / 8;
-        }
+			bpp = Bitmap.GetPixelFormatSize(bd.PixelFormat) / 8;
+
+			arraySegment = new List<infoSegment>();
+		}
 
 		public MyCanvas(string fileName)
 		{
@@ -70,6 +72,17 @@ namespace CGpractice
             image.UnlockBits(bd);
 
             image.Save(fileName, ImageFormat.Bmp);
+		}
+
+		public void Clear()
+		{
+			for (int i = 0; i < width; i++)
+			{
+				for (int j = 0; j < height; j++)
+				{
+					SetPixel(i, j, new byte[] { 0, 0, 0 });
+				}
+			}
 		}
 
 		public void DiffusePseudomonotone()
@@ -123,8 +136,32 @@ namespace CGpractice
 			}
 		}
 
-		public void DrawLineDDA(double x1, double y1, double x2, double y2, double r = 200, double g = 200, double b = 20)
+		private struct infoSegment
 		{
+			public Vector2 point1;
+			public int p1Area;
+			public Vector2 point2;
+			public int p2Area;
+			public byte[] color;
+		}
+
+		private List<infoSegment> arraySegment;
+
+		public void DrawLineDDA(double x1, double y1, double x2, double y2, double r = 200, double g = 200, double b = 20, bool create = true)
+		{
+			//________________________________
+			if (create)
+			{
+				var segment = new infoSegment();
+				segment.point1 = new Vector2(x1, y1);
+				segment.p1Area = 0x0000;
+				segment.point2 = new Vector2(x2, y2);
+				segment.p2Area = 0x0000;
+				segment.color = new byte[] { (byte)r, (byte)g, (byte)b };
+				arraySegment.Add(segment);
+			}
+			//________________________________
+
 			double k = (Math.Abs(y2 - y1)) / (double)(Math.Abs(x2 - x1));
 
 			double tx = x1;
@@ -311,6 +348,338 @@ namespace CGpractice
 				}
 			} while (stack.Count != 0);
 
+		}
+
+		//0x0001 // 1
+		//0x0010 // 16
+		//0x0100 // 256
+		//0x1000 // 4096
+		//0x1001 // 4097
+		//0x0110 // 272
+		//0x0101 // 257
+		//0x1010 // 4112
+		private int CountByte(Vector2 point, int x1, int y1, int x2, int y2)
+		{
+			int resByte = 0x0000;
+			if (point.y < y1) resByte += 0x1000;
+			if (point.y > y2) resByte += 0x0100;
+			if (point.x > x2) resByte += 0x0010;
+			if (point.x < x1) resByte += 0x0001;
+			return resByte;
+		}
+
+		private List<Vector2> CountPointsCrossingCS(infoSegment segment, int x1, int y1, int x2, int y2)
+		{
+			var pointsCrossing = new List<Vector2>();
+
+			double sx1 = segment.point1.x;
+			double sx2 = segment.point2.x;
+			double sy1 = segment.point1.y;
+			double sy2 = segment.point2.y;
+
+			double dx = sx2 - sx1;
+			double dy = sy2 - sy1;
+
+			if (dx == 0)
+			{
+				if (sx1 > x1 && sx1 < x2)
+				{
+					// Для простоты работы
+					if (sy1 > sy2)
+					{
+						double t = sy1;
+						sy1 = sy2;
+						sy2 = t;
+					}
+
+					if (y1 > sy1 && y1 < sy2) pointsCrossing.Add(new Vector2(sx1, y1));
+					if (y2 > sy1 && y2 < sy2) pointsCrossing.Add(new Vector2(sx1, y2));
+				}
+			}
+			else if (dy == 0)
+			{
+				if (sy1 > y1 && sy1 < y2)
+				{
+					// Для простоты работы
+					if (sx1 > sx2)
+					{
+						double t = sx1;
+						sx1 = sx2;
+						sx2 = t;
+					}
+
+					if (x1 > sx1 && x1 < sx2) pointsCrossing.Add(new Vector2(x1, sy1));
+					if (x2 > sx1 && x2 < sx2) pointsCrossing.Add(new Vector2(x2, sy1));
+				}
+			}
+			else if (segment.p1Area != 0x0000 || segment.p2Area != 0x0000)
+			{
+				double x;
+				double y;
+
+				x = sx1 + (y1 - sy1) * (dx / dy);
+				if (x >= x1 && x <= x2) pointsCrossing.Add(new Vector2(x, y1));
+
+				x = sx1 + (y2 - sy1) * (dx / dy);
+				if (x >= x1 && x <= x2) pointsCrossing.Add(new Vector2(x, y2));
+
+				y = sy1 + (x1 - sx1) * (dy / dx);
+				if (y >= y1 && y <= y2) pointsCrossing.Add(new Vector2(x1, y));
+
+				y = sy1 + (x2 - sx1) * (dy / dx);
+				if (y >= y1 && y <= y2) pointsCrossing.Add(new Vector2(x2, y));
+			}
+			return pointsCrossing;
+		}
+
+		public void CreateArea_CSalg(int x1, int y1, int x2, int y2)
+		{
+			for (int i = 0; i < arraySegment.Count; i++)
+			{
+				var segment = arraySegment[i];
+				segment.p1Area = CountByte(segment.point1, x1, y1, x2, y2);
+				segment.p2Area = CountByte(segment.point2, x1, y1, x2, y2);
+				arraySegment[i] = segment;
+			}
+			Clear();
+
+			//___________________________
+			DrawLineDDA(x1, y1, x2, y1, 130, 40, 10, false);
+			DrawLineDDA(x1, y1, x1, y2, 130, 40, 10, false);
+			DrawLineDDA(x2, y2, x2, y1, 130, 40, 10, false);
+			DrawLineDDA(x2, y2, x1, y2, 130, 40, 10, false);
+			//___________________________
+
+			for (int i = 0; i < arraySegment.Count; i++)
+			{
+				if ((arraySegment[i].p1Area & arraySegment[i].p2Area) != 0x0000)
+				{
+					arraySegment.RemoveAt(i);
+					i--;
+				}
+				else
+				{
+					var segment = arraySegment[i];
+					var points = CountPointsCrossingCS(segment, x1, y1, x2, y2);
+
+					if (points.Count == 0 && (segment.p1Area != 0x0000 || segment.p2Area != 0x0000))
+					{
+						arraySegment.RemoveAt(i);
+						i--;
+					}
+					else if (points.Count == 2)
+					{
+						if (segment.p1Area == 0x0000)
+						{
+							if ((points[0] - segment.point2).Length() < (points[1] - segment.point2).Length())
+							{
+								segment.point2 = points[0];
+							}
+							else
+							{
+								segment.point2 = points[1];
+							}
+						}
+						else if (segment.p2Area == 0x0000)
+						{
+							if ((points[0] - segment.point1).Length() < (points[1] - segment.point1).Length())
+							{
+								segment.point1 = points[0];
+							}
+							else
+							{
+								segment.point1 = points[1];
+							}
+						}
+						else
+						{
+							segment.point1 = points[0];
+							segment.point2 = points[1];
+						}
+						segment.p1Area = 0x0000;
+						segment.p2Area = 0x0000;
+						arraySegment[i] = segment;
+					}
+				}
+			}
+
+			for (int i = 0; i < arraySegment.Count; i++)
+			{
+				DrawLineDDA(arraySegment[i].point1.x, arraySegment[i].point1.y, arraySegment[i].point2.x, arraySegment[i].point2.y, 200, 200, 20, false);
+			}
+		}
+
+		private List<Vector2> CountPointsCrossingLB(infoSegment segment, int xL, int yD, int xR, int yU)
+		{
+			var pointsCrossing = new List<Vector2>();
+
+			double x0 = segment.point1.x;
+			double x1 = segment.point2.x;
+			double y0 = segment.point1.y;
+			double y1 = segment.point2.y;
+
+			var P = new double[4];
+			P[0] = x0 - x1;
+			P[1] = x1 - x0;
+			P[2] = y0 - y1;
+			P[3] = y1 - y0;
+			var Q = new double[4];
+			Q[0] = x0 - xL;
+			Q[1] = xR - x0;
+			Q[2] = y0 - yD;
+			Q[3] = yU - y0;
+
+			bool isEnd = false;
+			for (int i = 0; i < 4; i++)
+			{
+				if (P[i] == 0 && Q[i] < 0) isEnd = true;
+			}
+
+			if (!isEnd)
+			{
+				double t0 = 0;
+				double t1 = 1;
+				for (int i = 0; i < 4; i++)
+				{
+					if (P[i] < 0) t0 = Math.Max(t0, Q[i] / P[i]);
+					if (P[i] > 0) t1 = Math.Min(t1, Q[i] / P[i]);
+				}
+				if (t0 <= 1 && t1 >= 0 && t0 <= t1)
+				{
+					pointsCrossing.Add(new Vector2(x0 + t0 * (x1 - x0), y0 + t0 * (y1 - y0)));
+					pointsCrossing.Add(new Vector2(x0 + t1 * (x1 - x0), y0 + t1 * (y1 - y0)));
+				}
+			}
+			return pointsCrossing;
+		}
+
+		public void CreateArea__LBalg(int x1, int y1, int x2, int y2)
+		{
+			Clear();
+			//___________________________
+			DrawLineDDA(x1, y1, x2, y1, 130, 40, 10, false);
+			DrawLineDDA(x1, y1, x1, y2, 130, 40, 10, false);
+			DrawLineDDA(x2, y2, x2, y1, 130, 40, 10, false);
+			DrawLineDDA(x2, y2, x1, y2, 130, 40, 10, false);
+			//___________________________
+			for (int i = 0; i < arraySegment.Count; i++)
+			{
+				var segment = arraySegment[i];
+				var points = CountPointsCrossingLB(segment, x1, y1, x2, y2);
+				if (points.Count != 0)
+				{
+					segment.point1 = points[0];
+					segment.point2 = points[1];
+					arraySegment[i] = segment;
+				}
+				else
+				{
+					arraySegment.RemoveAt(i);
+					i--;
+				}
+			}
+
+			for (int i = 0; i < arraySegment.Count; i++)
+			{
+				DrawLineDDA(arraySegment[i].point1.x, arraySegment[i].point1.y, arraySegment[i].point2.x, arraySegment[i].point2.y, 200, 200, 20, false);
+			}
+		}
+
+		private List<Vector2> CountPointsCrossingCB(infoSegment segment, infoSegment[] sides)
+		{
+			var pointsCrossing = new List<Vector2>();
+
+			var N = new Vector2[sides.Length];
+			for (int i = 0; i < N.Length; i++)
+			{
+				var v = sides[i].point2 - sides[i].point1;
+				N[i] = new Vector2(-1 * v.y, v.x);
+			}
+
+			double x0 = segment.point1.x;
+			double x1 = segment.point2.x;
+			double y0 = segment.point1.y;
+			double y1 = segment.point2.y;
+			Vector2 sP = segment.point2 - segment.point1;
+
+			var P = new double[sides.Length];
+			for (int i = 0; i < P.Length; i++)
+			{
+				P[i] = Vector2.Dot(sP, N[i]);
+			}
+
+			var Q = new double[sides.Length];
+			for (int i = 0; i < Q.Length; i++)
+			{
+				Q[i] = Vector2.Dot(N[i], (segment.point1 - sides[i].point1));
+			}
+
+
+			bool isEnd = false;
+			for (int i = 0; i < P.Length; i++)
+			{
+				if (P[i] == 0 && Q[i] < 0) isEnd = true;
+			}
+
+			if (!isEnd)
+			{
+				double tmin = 0;
+				double tmax = 1;
+				for (int i = 0; i < P.Length; i++)
+				{
+					if (P[i] > 0) tmin = Math.Max(tmin, (-1 * Q[i]) / P[i]);
+					if (P[i] < 0) tmax = Math.Min(tmax, (-1 * Q[i]) / P[i]);
+				}
+				if (tmin <= 1 && tmax >= 0 && tmin <= tmax)
+				{
+					pointsCrossing.Add(new Vector2(x0 + tmin * (x1 - x0), y0 + tmin * (y1 - y0)));
+					pointsCrossing.Add(new Vector2(x0 + tmax * (x1 - x0), y0 + tmax * (y1 - y0)));
+				}
+			}
+			return pointsCrossing;
+		}
+
+		public void CreateArea__CBalg(Vector2[] AreaPoints)
+		{
+			var sides = new infoSegment[AreaPoints.Length];
+			Clear();
+			//___________________________
+			infoSegment side;
+			for (int i = 0; i < AreaPoints.Length - 1; i++)
+			{
+				side = new infoSegment();
+				side.point1 = AreaPoints[i];
+				side.point2 = AreaPoints[i + 1];
+				sides[i] = side;
+				DrawLineDDA(side.point1.x, side.point1.y, side.point2.x, side.point2.y, 130, 40, 10, false);
+			}
+			side = new infoSegment();
+			side.point1 = AreaPoints[AreaPoints.Length - 1];
+			side.point2 = AreaPoints[0];
+			sides[AreaPoints.Length - 1] = side;
+			DrawLineDDA(side.point1.x, side.point1.y, side.point2.x, side.point2.y, 130, 40, 10, false);
+			//___________________________
+			for (int i = 0; i < arraySegment.Count; i++)
+			{
+				var segment = arraySegment[i];
+				var points = CountPointsCrossingCB(segment, sides);
+				if (points.Count != 0)
+				{
+					segment.point1 = points[0];
+					segment.point2 = points[1];
+					arraySegment[i] = segment;
+				}
+				else
+				{
+					arraySegment.RemoveAt(i);
+					i--;
+				}
+			}
+
+			for (int i = 0; i < arraySegment.Count; i++)
+			{
+				DrawLineDDA(arraySegment[i].point1.x, arraySegment[i].point1.y, arraySegment[i].point2.x, arraySegment[i].point2.y, 200, 200, 20, false);
+			}
 		}
 	}
 
