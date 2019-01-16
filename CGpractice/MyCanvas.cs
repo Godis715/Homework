@@ -8,7 +8,7 @@ namespace CGpractice
 {
 	class MyCanvas
 	{
-
+		#region Основные
 		private Bitmap image;
 		private BitmapData bd;
 
@@ -22,7 +22,7 @@ namespace CGpractice
 			height = h;
 
 			image = new Bitmap(w, h);
-			bd = image.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+			bd = image.LockBits(new Rectangle(0, 0, width - 1, height - 1), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
 
 			bpp = Bitmap.GetPixelFormatSize(bd.PixelFormat) / 8;
 
@@ -32,9 +32,9 @@ namespace CGpractice
 		public MyCanvas(string fileName)
 		{
 			image = new Bitmap(fileName);
-			width = image.Width - 1;
-			height = image.Height - 1;
-			bd = image.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+			width = image.Width + 1;
+			height = image.Height + 1;
+			bd = image.LockBits(new Rectangle(0, 0, width - 1, height - 1), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
 
 			bpp = Bitmap.GetPixelFormatSize(bd.PixelFormat) / 8;
 		}
@@ -103,7 +103,7 @@ namespace CGpractice
 		{
 			int w = Math.Min(this.width, sourceCanvas.width);
 			int h = Math.Min(this.height, sourceCanvas.height);
-			for (int x = 0; x <= w; x++)
+			for (int x = 0; x < w; x++)
 			{
 				for (int y = 0; y < h; y++)
 				{
@@ -112,6 +112,18 @@ namespace CGpractice
 				}
 			}
 		}
+
+		public void Clear()
+		{
+			for (int i = 0; i < width; i++)
+			{
+				for (int j = 0; j < height; j++)
+				{
+					SetPixel(i, j, new byte[] { 0, 0, 0 });
+				}
+			}
+		}
+		#endregion
 
 		public void PrintHistogram()
 		{
@@ -128,11 +140,18 @@ namespace CGpractice
 					histogramB[color[2]]++;
 				}
 			}
+			int maxCount = 256;
 			for (int i = 0; i < 256; i++)
 			{
-				histogramR[i] = (int)(histogramR[i] * (255 / (double)(width * height))) * 20;
-				histogramG[i] = (int)(histogramG[i] * (255 / (double)(width * height))) * 20;
-				histogramB[i] = (int)(histogramB[i] * (255 / (double)(width * height))) * 20;
+				if (histogramR[i] > maxCount) maxCount = histogramR[i];
+				if (histogramG[i] > maxCount) maxCount = histogramG[i];
+				if (histogramB[i] > maxCount) maxCount = histogramB[i];
+			}
+			for (int i = 0; i < 256; i++)
+			{
+				histogramR[i] = (int)(histogramR[i] * (255 / (double)(width * height)));
+				histogramG[i] = (int)(histogramG[i] * (255 / (double)(width * height)));
+				histogramB[i] = (int)(histogramB[i] * (255 / (double)(width * height)));
 			}
 			var ImageHistogramR = new MyCanvas(256, 256);
 			var ImageHistogramG = new MyCanvas(256, 256);
@@ -172,24 +191,13 @@ namespace CGpractice
 			ImageHistogram.Save("histogram.bmp");
 		}
 
-		public void Clear()
-		{
-			for (int i = 0; i < width; i++)
-			{
-				for (int j = 0; j < height; j++)
-				{
-					SetPixel(i, j, new byte[] { 0, 0, 0 });
-				}
-			}
-		}
-
 		public void DiffusePseudomonotone()
 		{
 			int d = 0;
-			for (int y = 0; y <= height; y++)
+			for (int y = 0; y < height; y++)
 			{
 				d = 0;
-				for (int x = 0; x <= width; x++)
+				for (int x = 0; x < width; x++)
 				{
 					var color = GetPixel(x, y, 1)[0];
 					if (color + d < 128)
@@ -206,6 +214,317 @@ namespace CGpractice
 			}
 		}
 
+		public void AutoContrast()
+		{
+			int minY = 255, maxY = 0;
+			for (int x = 0; x < width; x++)
+			{
+				for (int y = 0; y < height; y++)
+				{
+					var color = GetPixel(x, y, 3);
+					int r = color[0];
+					int g = color[1];
+					int b = color[2];
+
+					if (r > maxY) maxY = r;
+					if (r < minY) minY = r;
+
+					if (g > maxY) maxY = g;
+					if (g < minY) minY = g;
+
+					if (b > maxY) maxY = b;
+					if (b < minY) minY = b;
+				}
+			}
+			for (int x = 0; x < width; x++)
+			{
+				for (int y = 0; y < height; y++)
+				{
+					var color = GetPixel(x, y, 3);
+					int r = (int)((color[0] - minY) * (255 / (double)(maxY - minY)));
+					int g = (int)((color[1] - minY) * (255 / (double)(maxY - minY)));
+					int b = (int)((color[2] - minY) * (255 / (double)(maxY - minY)));
+					SetPixel(x, y, new byte[] { (byte)r, (byte)g, (byte)b });
+				}
+			}
+		}
+
+		public void AutoLevels()
+		{
+			int minR = 255, maxR = 0;
+			int minG = 255, maxG = 0;
+			int minB = 255, maxB = 0;
+			for (int x = 0; x < width; x++)
+			{
+				for (int y = 0; y < height; y++)
+				{
+					var color = GetPixel(x, y, 3);
+					int r = color[0];
+					int g = color[1];
+					int b = color[2];
+
+					if (r > maxR) maxR = r;
+					if (r < minR) minR = r;
+
+					if (g > maxG) maxG = g;
+					if (g < minG) minG = g;
+
+					if (b > maxB) maxB = b;
+					if (b < minB) minB = b;
+				}
+			}
+			for (int x = 0; x < width; x++)
+			{
+				for (int y = 0; y < height; y++)
+				{
+					var color = GetPixel(x, y, 3);
+					int r = (int)((color[0] - minR) * (255 / (double)(maxR - minR)));
+					int g = (int)((color[1] - minG) * (255 / (double)(maxG - minG)));
+					int b = (int)((color[2] - minB) * (255 / (double)(maxB - minB)));
+					SetPixel(x, y, new byte[] { (byte)r, (byte)g, (byte)b });
+				}
+			}
+		}
+
+		public void GammaCorrection(double Y)
+		{
+			for (int x = 0; x < width; x++)
+			{
+				for (int y = 0; y < height; y++)
+				{
+					var color = GetPixel(x, y, 3);
+					int r = (int)(Math.Pow((double)color[0] / 255, 1 / Y) * 255);
+					int g = (int)(Math.Pow((double)color[1] / 255, 1 / Y) * 255);
+					int b = (int)(Math.Pow((double)color[2] / 255, 1 / Y) * 255);
+					SetPixel(x, y, new byte[] { (byte)r, (byte)g, (byte)b });
+				}
+			}
+		}
+
+		public void LogCorrection(double c)
+		{
+			for (int x = 0; x < width; x++)
+			{
+				for (int y = 0; y < height; y++)
+				{
+					var color = GetPixel(x, y, 3);
+					int r = (int)(c * Math.Log((double)color[0] + 1));
+					int g = (int)(c * Math.Log((double)color[1] + 1));
+					int b = (int)(c * Math.Log((double)color[2] + 1));
+					SetPixel(x, y, new byte[] { (byte)r, (byte)g, (byte)b });
+				}
+			}
+		}
+
+		public void ExpCorrection(double c)
+		{
+			for (int x = 0; x < width; x++)
+			{
+				for (int y = 0; y < height; y++)
+				{
+					var color = GetPixel(x, y, 3);
+					int r = (int)(Math.Pow(Math.E, (color[0] * c) / 255) * 255);
+					int g = (int)(Math.Pow(Math.E, (color[1] * c) / 255) * 255);
+					int b = (int)(Math.Pow(Math.E, (color[2] * c) / 255) * 255);
+					SetPixel(x, y, new byte[] { (byte)r, (byte)g, (byte)b });
+				}
+			}
+		}
+
+		public void Balance_referenceСolor(int xS, int yS, double rD, double gD, double bD)
+		{
+			var colorSource = GetPixel(xS, yS, 3);
+			double rS = colorSource[0];
+			double gS = colorSource[1];
+			double bS = colorSource[2];
+			for (int x = 0; x < width; x++)
+			{
+				for (int y = 0; y < height; y++)
+				{
+					var color = GetPixel(x, y, 3);
+					int r = Math.Min((int)(color[0] * (rD / rS)), 255);
+					int g = Math.Min((int)(color[1] * (gD / gS)), 255);
+					int b = Math.Min((int)(color[2] * (bD / bS)), 255);
+					SetPixel(x, y, new byte[] { (byte)r, (byte)g, (byte)b });
+				}
+			}
+		}
+
+		public void Balance_GrayWorld()
+		{
+			double rM = 0;
+			double gM = 0;
+			double bM = 0;
+			for (int x = 0; x < width; x++)
+			{
+				for (int y = 0; y < height; y++)
+				{
+					var color = GetPixel(x, y, 3);
+					rM += color[0];
+					gM += color[1];
+					bM += color[2];
+				}
+			}
+			rM /= width * height;
+			gM /= width * height;
+			bM /= width * height;
+			double avg = (rM + gM + bM) / 3;
+			for (int x = 0; x < width; x++)
+			{
+				for (int y = 0; y < height; y++)
+				{
+					var color = GetPixel(x, y, 3);
+					int r = Math.Min((int)(color[0] * (avg / rM)), 255);
+					int g = Math.Min((int)(color[1] * (avg / gM)), 255);
+					int b = Math.Min((int)(color[2] * (avg / bM)), 255);
+					SetPixel(x, y, new byte[] { (byte)r, (byte)g, (byte)b });
+				}
+			}
+		}
+
+		public void Balance_PerfectReflector()
+		{
+			double rMax = 0;
+			double gMax = 0;
+			double bMax = 0;
+			for (int x = 0; x < width; x++)
+			{
+				for (int y = 0; y < height; y++)
+				{
+					var color = GetPixel(x, y, 3);
+					if (color[0] > rMax) rMax = color[0];
+					if (color[1] > gMax) gMax = color[1];
+					if (color[2] > bMax) bMax = color[2];
+				}
+			}
+			for (int x = 0; x < width; x++)
+			{
+				for (int y = 0; y < height; y++)
+				{
+					var color = GetPixel(x, y, 3);
+					int r = (int)(color[0] * (255 / rMax));
+					int g = (int)(color[1] * (255 / gMax));
+					int b = (int)(color[2] * (255 / bMax));
+					SetPixel(x, y, new byte[] { (byte)r, (byte)g, (byte)b });
+				}
+			}
+		}
+
+		public double[][] CreateGaussianH(int size, double d)
+		{
+			int p = size / 2;
+			double elSum = 0.0;
+			if (size % 2 == 0) size++;
+			var H = new double[size][];
+			for (int i = -p; i <= p; i++)
+			{
+				H[i + p] = new double[size];
+				for (int j = -p; j <= p; j++)
+				{
+					H[i + p][j + p] = (1.0 / (2 * Math.PI * d * d)) * Math.Pow(Math.E, -1 * (double)(i * i + j * j) / (2 * d * d));
+					elSum += H[i + p][j + p];
+				}
+			}
+			for (int i = 0; i < size; i++)
+			{
+				for (int j = 0; j < size; j++)
+				{
+					H[i][j] /= elSum;
+				}
+			}
+			return H;
+		}
+
+		public void BilateralConvolution(double[][] H, double K)
+		{
+			var tempImage = new MyCanvas(width + 1, height + 1);
+			tempImage.Copy(this);
+			int kMin = -1 * H.Length / 2;
+			int kMax = H.Length / 2;
+			int tMin = -1 * H.Length / 2;
+			int tMax = H.Length / 2;
+			for (int x = Math.Abs(kMin); x < width - Math.Abs(kMax); x++)
+			{
+				for (int y = Math.Abs(tMin); y < height - Math.Abs(tMax); y++)
+				{
+					double r = 0;
+					double g = 0;
+					double b = 0;
+					for (int i = 0; i < H.Length; i++)
+					{
+						for (int j = 0; j < H.Length; j++)
+						{
+							var color = this.GetPixel(x + kMin + i, y + tMin + j, 3);
+							r += color[0] * H[j][i];
+							g += color[1] * H[j][i];
+							b += color[2] * H[j][i];
+						}
+					}
+					r = (int)(r / K);
+					g = (int)(g / K);
+					b = (int)(b / K);
+					r = Math.Min(Math.Abs(r), 255);
+					g = Math.Min(Math.Abs(g), 255);
+					b = Math.Min(Math.Abs(b), 255);
+					//r = Math.Min(r / 4 + 127, 255);
+					//g = Math.Min(g / 4 + 127, 255);
+					//b = Math.Min(b / 4 + 127, 255);
+					tempImage.SetPixel(x, y, new byte[] { (byte)r, (byte)g, (byte)b });
+				}
+			}
+			this.Copy(tempImage);
+		}
+
+		public void MediumFilter(int rad)
+		{
+			for (int x = rad; x < width - rad; x++)
+			{
+				for (int y = rad; y < height - rad; y++)
+				{
+					var rArr = new List<int>();
+					var gArr = new List<int>();
+					var bArr = new List<int>();
+					for (int i = x - rad; i <= x + rad; i++)
+					{
+						for (int j = y - rad; j <= y + rad; j++)
+						{
+							var tempColor = GetPixel(i, j, 3);
+							rArr.Add(tempColor[0]);
+							gArr.Add(tempColor[1]);
+							bArr.Add(tempColor[2]);
+						}
+					}
+					rArr.Sort();
+					gArr.Sort();
+					bArr.Sort();
+					SetPixel(x, y, new byte[] {
+						(byte)rArr[(rad * 2 + 1) * (rad * 2 + 1) / 2],
+						(byte)gArr[(rad * 2 + 1) * (rad * 2 + 1) / 2],
+						(byte)bArr[(rad * 2 + 1) * (rad * 2 + 1) / 2] });
+				}
+			}
+		}
+
+		public void Merger(MyCanvas sourceCanvas)
+		{
+			int w = Math.Min(this.width, sourceCanvas.width);
+			int h = Math.Min(this.height, sourceCanvas.height);
+			for (int x = 0; x < w; x++)
+			{
+				for (int y = 0; y < h; y++)
+				{
+					var colorOne = this.GetPixel(x, y, 3);
+					var colorTwo = sourceCanvas.GetPixel(x, y, 3);
+					//int r = (int)Math.Min(Math.Sqrt(Math.Pow(colorOne[0], 2) + Math.Pow(colorTwo[0], 2)), 255);
+					//int g = (int)Math.Min(Math.Sqrt(Math.Pow(colorOne[1], 2) + Math.Pow(colorTwo[1], 2)), 255);
+					//int b = (int)Math.Min(Math.Sqrt(Math.Pow(colorOne[2], 2) + Math.Pow(colorTwo[2], 2)), 255);
+					int r = Math.Min(Math.Abs(colorOne[0]) + Math.Abs(colorTwo[0]), 255);
+					int g = Math.Min(Math.Abs(colorOne[1]) + Math.Abs(colorTwo[1]), 255);
+					int b = Math.Min(Math.Abs(colorOne[2]) + Math.Abs(colorTwo[2]), 255);
+					this.SetPixel(x, y, new byte[] { (byte)r, (byte)g, (byte)b });
+				}
+			}
+		}
 		#region Рисование линии
 		public void DrawLineParam(double x1, double y1, double x2, double y2)
 		{
@@ -416,9 +735,9 @@ namespace CGpractice
 			{
 				SetPixel(tx, ty, color);
 				if (tx - 1 >= 0) FillPixel(tx - 1, ty, color, baseColor);
-				if (tx + 1 <= width) FillPixel(tx + 1, ty, color, baseColor);
+				if (tx + 1 <= width - 1) FillPixel(tx + 1, ty, color, baseColor);
 				if (ty - 1 >= 0) FillPixel(tx, ty - 1, color, baseColor);
-				if (ty + 1 <= height) FillPixel(tx, ty + 1, color, baseColor);
+				if (ty + 1 <= height - 1) FillPixel(tx, ty + 1, color, baseColor);
 			}
 		}
 		public void FillOnClickRec(int x0, int y0, double r, double g, double b)
@@ -443,9 +762,9 @@ namespace CGpractice
 				{
 					SetPixel(tx, ty, color);
 					if (tx - 1 >= 0) stack.Push(new int[] { tx - 1, ty });
-					if (tx + 1 <= width) stack.Push(new int[] { tx + 1, ty });
+					if (tx + 1 <= width - 1) stack.Push(new int[] { tx + 1, ty });
 					if (ty - 1 >= 0) stack.Push(new int[] { tx, ty - 1 });
-					if (ty + 1 <= height) stack.Push(new int[] { tx, ty + 1 });
+					if (ty + 1 <= height - 1) stack.Push(new int[] { tx, ty + 1 });
 				}
 			} while (stack.Count != 0);
 
@@ -865,7 +1184,7 @@ namespace CGpractice
 		private Vector2 pArea2;
 		private void CountArea()
 		{
-			pArea1 = new Vector2(canvas.width + 1, canvas.height + 1);
+			pArea1 = new Vector2(canvas.width, canvas.height);
 			pArea2 = new Vector2(0, 0);
 			for (int i = 0; i < points.Length; i++)
 			{
@@ -1033,7 +1352,7 @@ namespace CGpractice
 					{
 						int tx = (int)(cx + (i - cx) * a);
 						int ty = (int)(cy + (j - cy) * a);
-						if (tx >= 0 && tx <= canvas.width && ty >= 0 && ty <= canvas.height)
+						if (tx >= 0 && tx <= canvas.width - 1 && ty >= 0 && ty <= canvas.height - 1)
 						{
 							var color = canvas.GetPixel(i, j, 3);
 							canvas.SetPixel(tx, ty, color);
@@ -1048,7 +1367,7 @@ namespace CGpractice
 		{
 			double errorx = 0.0;
 			double errory = 0.0;
-			for (int i = 0; i <= canvas.width; ++i)
+			for (int i = 0; i < canvas.width; ++i)
 			{
 				for (int j = 0; j <= canvas.height; ++j)
 				{
@@ -1084,7 +1403,7 @@ namespace CGpractice
 					{
 						int tx = i + dx;
 						int ty = j + dy;
-						if (tx >= 0 && tx <= tempCanvas.width && ty >= 0 && ty <= tempCanvas.height)
+						if (tx >= 0 && tx <= tempCanvas.width - 1 && ty >= 0 && ty <= tempCanvas.height - 1)
 						{
 							var colorFirst = canvas.GetPixel(i, j, 3);
 							var colorSecond = canvas.GetPixel(tx, ty, 3);
@@ -1097,9 +1416,9 @@ namespace CGpractice
 					}
 				}
 			}
-			for (int x = 0; x <= canvas.width; x++)
+			for (int x = 0; x < canvas.width; x++)
 			{
-				for (int y = 0; y < canvas.width; y++)
+				for (int y = 0; y < canvas.height; y++)
 				{
 					var colorFirst = canvas.GetPixel(x, y, 3);
 					var colorSecond = tempCanvas.GetPixel(x, y, 3);
@@ -1123,7 +1442,7 @@ namespace CGpractice
 					{
 						int tx = (int)((i - cx) * Math.Cos(angle) - (j - cy) * Math.Sin(angle)) + cx;
 						int ty = (int)((i - cx) * Math.Sin(angle) + (j - cy) * Math.Cos(angle)) + cy;
-						if (tx >= 0 && tx <= canvas.width && ty >= 0 && ty <= canvas.height)
+						if (tx >= 0 && tx <= canvas.width - 1 && ty >= 0 && ty <= canvas.height - 1)
 						{
 							var color = canvas.GetPixel(i, j, 3);
 							canvas.SetPixel(tx, ty, color);
@@ -1173,7 +1492,7 @@ namespace CGpractice
 				{
 					int tx = (int)(cx + (i - cx) * a);
 					int ty = (int)(cy + (j - cy) * a);
-					if (tx >= 0 && tx <= canvas.width && ty >= 0 && ty <= canvas.height)
+					if (tx >= 0 && tx <= canvas.width - 1 && ty >= 0 && ty <= canvas.height - 1 )
 					{
 						var color = canvas.GetPixel(i, j, 3);
 						canvas.SetPixel(tx, ty, color);
@@ -1186,7 +1505,7 @@ namespace CGpractice
 		{
 			double errorx = 0.0;
 			double errory = 0.0;
-			for (int i = 0; i <= canvas.width; ++i)
+			for (int i = 0; i < canvas.width; ++i)
 			{
 				for (int j = 0; j <= canvas.height; ++j)
 				{
@@ -1220,7 +1539,7 @@ namespace CGpractice
 				{
 					int tx = i + dx;
 					int ty = j + dy;
-					if (tx >= 0 && tx <= canvas.width && ty >= 0 && ty <= canvas.height)
+					if (tx >= 0 && tx <= canvas.width - 1 && ty >= 0 && ty <= canvas.height - 1)
 					{
 						var color = canvas.GetPixel(i, j, 3);
 						canvas.SetPixel(tx, ty, color);
@@ -1238,7 +1557,7 @@ namespace CGpractice
 				{
 					int tx = (int)((i - cx) * Math.Cos(angle) - (j - cy) * Math.Sin(angle)) + cx;
 					int ty = (int)((i - cx) * Math.Sin(angle) + (j - cy) * Math.Cos(angle)) + cy;
-					if (tx >= 0 && tx <= canvas.width && ty >= 0 && ty <= canvas.height)
+					if (tx >= 0 && tx <= canvas.width - 1 && ty >= 0 && ty <= canvas.height - 1)
 					{
 						var color = canvas.GetPixel(i, j, 3);
 						canvas.SetPixel(tx, ty, color);
@@ -1250,7 +1569,7 @@ namespace CGpractice
 		public void NewRatate(int cx, int cy, double _angle)
 		{
 			double angle = (_angle * Math.PI) / 180;
-			for (int i = 0; i <= canvas.width; ++i)
+			for (int i = 0; i < canvas.width; ++i)
 			{	
 				for (int j = 0; j <= canvas.height; ++j)
 				{
