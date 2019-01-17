@@ -124,7 +124,7 @@ namespace CGpractice
 			}
 		}
 		#endregion
-
+		#region Коррекция изображения
 		public void PrintHistogram()
 		{
 			var histogramR = new int[256];
@@ -525,6 +525,7 @@ namespace CGpractice
 				}
 			}
 		}
+		#endregion
 		#region Рисование линии
 		public void DrawLineParam(double x1, double y1, double x2, double y2)
 		{
@@ -1104,6 +1105,85 @@ namespace CGpractice
 		}
 		//__________________________________
 		#endregion
+		public struct Segment
+		{
+			public Vector2 point1;
+			public Vector2 point2;
+		}
+		private void DrawSegments(List<Segment> segments)
+		{
+			Clear();
+			for (int i = 0; i < segments.Count; i++)
+			{
+				DrawLineDDA(segments[i].point1.x, segments[i].point1.y, segments[i].point2.x, segments[i].point2.y, 36, 140, 100);
+			}
+		}
+		public void DrawFractalCurveKoha(List<Segment> _segments, int countIt)
+		{
+			var segments = _segments;
+			DrawSegments(segments);
+			for (int it = 0; it < countIt; it++)
+			{
+				var newSegments = new List<Segment>();
+				for (int i = 0; i < segments.Count; i++)
+				{
+					var tempSegment = segments[i];
+					var newSegment1 = new Segment();
+					var newSegment2 = new Segment();
+					var newSegment3 = new Segment();
+					var newSegment4 = new Segment();
+
+					Vector2 vecSegment = tempSegment.point2 - tempSegment.point1;
+
+					newSegment1.point1 = tempSegment.point1;
+					newSegment1.point2 = tempSegment.point1 + (vecSegment / 3);
+
+					newSegment2.point1 = newSegment1.point2;
+					newSegment2.point2 = tempSegment.point1 + (vecSegment / 2) + new Vector2(vecSegment.y, -1 * vecSegment.x) / 3;
+
+					newSegment3.point1 = newSegment2.point2;
+					newSegment3.point2 = tempSegment.point1 + (vecSegment / 3) * 2;
+
+					newSegment4.point1 = newSegment3.point2;
+					newSegment4.point2 = tempSegment.point2;
+
+					newSegments.Add(newSegment1);
+					newSegments.Add(newSegment2);
+					newSegments.Add(newSegment3);
+					newSegments.Add(newSegment4);
+				}
+				segments = newSegments;
+				DrawSegments(segments);
+			}
+		}
+		public void DrawFractalDragon_HarterHathaway(List<Segment> _segments, int countIt)
+		{
+			var segments = _segments;
+			DrawSegments(segments);
+			for (int it = 0; it < countIt; it++)
+			{
+				var newSegments = new List<Segment>();
+				for (int i = 0; i < segments.Count; i++)
+				{
+					var tempSegment = segments[i];
+					var newSegment1 = new Segment();
+					var newSegment2 = new Segment();
+
+					Vector2 vecSegment = tempSegment.point2 - tempSegment.point1;
+
+					newSegment1.point1 = tempSegment.point1;
+					newSegment1.point2 = tempSegment.point1 + (vecSegment / 2) + new Vector2(vecSegment.y, -1 * vecSegment.x) / 2;
+
+					newSegment2.point1 = newSegment1.point2;
+					newSegment2.point2 = tempSegment.point2;
+
+					newSegments.Add(newSegment1);
+					newSegments.Add(newSegment2);
+				}
+				segments = newSegments;
+				DrawSegments(segments);
+			}
+		}
 	}
 
 	class Vector2

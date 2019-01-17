@@ -1,5 +1,5 @@
 ﻿using System;
-
+using System.Collections.Generic;
 
 namespace CGpractice
 {
@@ -8,8 +8,16 @@ namespace CGpractice
         static void Main(string[] args)
         {
 			// size of canvas is 255 x 255
-			//MyCanvas canvas = new MyCanvas(256, 265);
-			MyCanvas canvas = new MyCanvas("gaus.png");
+			MyCanvas canvas = new MyCanvas(256, 265);
+			//MyCanvas canvas = new MyCanvas("gaus.png");
+			var segments = new List<MyCanvas.Segment>();
+			//segments.Add(new MyCanvas.Segment { point1 = new Vector2(70, 200), point2 = new Vector2(120, 50) });
+			//segments.Add(new MyCanvas.Segment { point1 = new Vector2(120, 50), point2 = new Vector2(170, 200) });
+			//segments.Add(new MyCanvas.Segment { point1 = new Vector2(170, 200), point2 = new Vector2(70, 200) });
+			//canvas.DrawFractalCurveKoha(segments, 1);
+			segments.Add(new MyCanvas.Segment { point1 = new Vector2(50, 100), point2 = new Vector2(100, 140) });
+			canvas.DrawFractalDragon_HarterHathaway(segments, 10);
+
 			#region Коррекция изображения
 			//Коррекция изображения
 			//canvas.AutoContrast();
