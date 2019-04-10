@@ -6,10 +6,10 @@ dotnet: 2.1.504
 sudo: false
 
 install:
-  nuget restore TravisTestProj_Factorial.sln
+  - dotnet restore
 
 script:
-  - dotnet build TravisTestProj_Factorial.sln -c Release
+  - dotnet build --configuration Release
 
 after_scipt:
   - bash <(curl -s https://codecov.io/bash)
