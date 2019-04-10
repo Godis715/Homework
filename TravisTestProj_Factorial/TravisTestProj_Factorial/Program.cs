@@ -7,7 +7,6 @@ namespace TravisTestProj_Factorial
         static void Main(string[] args)
         {
             Console.WriteLine(Mathematics.Factorial(0));
-            Console.ReadKey();
         }
     }
 }
