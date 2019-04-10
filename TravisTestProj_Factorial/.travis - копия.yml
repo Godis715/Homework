@@ -1,0 +1,20 @@
+language: csharp
+
+solution: TravisTestProj_Factorial.sln
+
+dotnet: 2.1.504
+sudo: false
+
+env:
+  global:
+    - DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+install:
+  nuget restore TravisTestProj_Factorial.sln
+
+script:
+  - dotnet build TravisTestProj_Factorial.sln -c Release
+  - dotnet test -c Release --no-build Unit_Tests/Unit_Tests.csproj /p:CollectCoverage=true /p:CollectOutputFormat=opencover
+
+after_scipt:
+  - bash <(curl -s https://codecov.io/bash)

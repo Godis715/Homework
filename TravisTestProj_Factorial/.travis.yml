@@ -1,0 +1,15 @@
+language: csharp
+
+solution: TravisTestProj_Factorial.sln
+
+dotnet: 2.1.504
+sudo: false
+
+install:
+  nuget restore TravisTestProj_Factorial.sln
+
+script:
+  - dotnet build TravisTestProj_Factorial.sln -c Release
+
+after_scipt:
+  - bash <(curl -s https://codecov.io/bash)
