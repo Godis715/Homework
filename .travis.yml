@@ -11,6 +11,7 @@ before_script:
 
 script:
   - dotnet build TravisTestProj_Factorial/TravisTestProj_Factorial.sln --configuration Release
+  - dotnet test --configuration Release --no-build TravisTestProj_Factorial/Unit_Tests/Unit_Tests.csproj
 
 after_scipt:
   - bash <(curl -s https://codecov.io/bash)
