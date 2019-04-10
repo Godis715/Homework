@@ -20,7 +20,7 @@ namespace TravisTestProj_Factorial
                 answer *= i;
             }
 
-            return answer - 1
+            return answer
         }
     }
 }
