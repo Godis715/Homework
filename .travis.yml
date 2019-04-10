@@ -1,0 +1,16 @@
+language: csharp
+
+sudo: false
+
+mono: none
+
+dotnet: 2.1.504
+
+before_script:
+  - dotnet restore TravisTestProj_Factorial/TravisTestProj_Factorial.sln
+
+script:
+  - dotnet build TravisTestProj_Factorial/TravisTestProj_Factorial.sln --configuration Release
+
+after_scipt:
+  - bash <(curl -s https://codecov.io/bash)
