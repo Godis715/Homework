@@ -1,5 +1,3 @@
-system: windows
-
 language: csharp
 
 dotnet: 2.1.504
