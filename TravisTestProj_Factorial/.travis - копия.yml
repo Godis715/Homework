@@ -14,6 +14,7 @@ install:
 
 script:
   - dotnet build TravisTestProj_Factorial.sln -c Release
+  - dotnet test -c Release --no-build Unit_Tests/Unit_Tests.csproj /p:CollectCoverage=true /p:CollectOutputFormat=opencover
 
 after_scipt:
   - bash <(curl -s https://codecov.io/bash)
