@@ -1,0 +1,13 @@
+D:\Godis\Projects\Homework\TicTacToe-WinForms\obj\Debug\TicTacToe.csprojAssemblyReference.cache
+D:\Godis\Projects\Homework\TicTacToe-WinForms\obj\Debug\TicTacToe.TicTacToeForm.resources
+D:\Godis\Projects\Homework\TicTacToe-WinForms\obj\Debug\TicTacToe.Properties.Resources.resources
+D:\Godis\Projects\Homework\TicTacToe-WinForms\obj\Debug\TicTacToe.csproj.GenerateResource.cache
+D:\Godis\Projects\Homework\TicTacToe-WinForms\obj\Debug\TicTacToe.csproj.CoreCompileInputs.cache
+D:\Godis\Projects\Homework\TicTacToe-WinForms\bin\Debug\TicTacToe.exe.config
+D:\Godis\Projects\Homework\TicTacToe-WinForms\bin\Debug\TicTacToe.exe
+D:\Godis\Projects\Homework\TicTacToe-WinForms\bin\Debug\TicTacToe.pdb
+D:\Godis\Projects\Homework\TicTacToe-WinForms\bin\Debug\System.ValueTuple.dll
+D:\Godis\Projects\Homework\TicTacToe-WinForms\bin\Debug\System.ValueTuple.xml
+D:\Godis\Projects\Homework\TicTacToe-WinForms\obj\Debug\TicTacToe.csproj.CopyComplete
+D:\Godis\Projects\Homework\TicTacToe-WinForms\obj\Debug\TicTacToe.exe
+D:\Godis\Projects\Homework\TicTacToe-WinForms\obj\Debug\TicTacToe.pdb

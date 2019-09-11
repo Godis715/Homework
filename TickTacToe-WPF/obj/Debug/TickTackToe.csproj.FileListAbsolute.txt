@@ -1,0 +1,15 @@
+D:\Godis\Projects\Homework\TickTacToe-WPF\bin\Debug\TickTackToe.exe.config
+D:\Godis\Projects\Homework\TickTacToe-WPF\bin\Debug\TickTackToe.exe
+D:\Godis\Projects\Homework\TickTacToe-WPF\bin\Debug\TickTackToe.pdb
+D:\Godis\Projects\Homework\TickTacToe-WPF\obj\Debug\TickTackToe.csprojAssemblyReference.cache
+D:\Godis\Projects\Homework\TickTacToe-WPF\obj\Debug\MainWindow.g.cs
+D:\Godis\Projects\Homework\TickTacToe-WPF\obj\Debug\App.g.cs
+D:\Godis\Projects\Homework\TickTacToe-WPF\obj\Debug\TickTackToe_MarkupCompile.cache
+D:\Godis\Projects\Homework\TickTacToe-WPF\obj\Debug\TickTackToe_MarkupCompile.lref
+D:\Godis\Projects\Homework\TickTacToe-WPF\obj\Debug\MainWindow.baml
+D:\Godis\Projects\Homework\TickTacToe-WPF\obj\Debug\TickTackToe.g.resources
+D:\Godis\Projects\Homework\TickTacToe-WPF\obj\Debug\TickTackToe.Properties.Resources.resources
+D:\Godis\Projects\Homework\TickTacToe-WPF\obj\Debug\TickTackToe.csproj.GenerateResource.cache
+D:\Godis\Projects\Homework\TickTacToe-WPF\obj\Debug\TickTackToe.csproj.CoreCompileInputs.cache
+D:\Godis\Projects\Homework\TickTacToe-WPF\obj\Debug\TickTackToe.exe
+D:\Godis\Projects\Homework\TickTacToe-WPF\obj\Debug\TickTackToe.pdb
