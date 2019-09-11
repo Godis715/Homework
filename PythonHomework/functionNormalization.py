@@ -2,6 +2,8 @@ from inputData import x, u
 import numpy as np
 import bisect as bs
 
+# True -> logging algorithm's steps 
+# False -> no logging
 debugMode = False
 
 for i in range(len(x)-1):
@@ -25,6 +27,7 @@ print(f"ambiguous indices are between {i_end} and {i_start}")
 # so the result will be sorted in INCREASING way
 # (i_end) = elem_1 < ... < elem_n < (i_start)
 
+# pseudo vector multiplication
 def pseudoCross(a, b):
     return a[0] * b[1] - a[1] * b[0]
 
@@ -32,6 +35,8 @@ if debugMode:
     print(f"check pseudo cross 1: {pseudoCross( [0, 1], [1, 0] )}")
     print(f"check pseudo cross 2: {pseudoCross( [1, 0], [0, 1] )}")
 
+# calculating an oriented square of a polygon
+# using pseudo vector multiplication
 def orientedSquare(figure):
     sqAcc = 0
     for i in range(len(figure) - 1):
